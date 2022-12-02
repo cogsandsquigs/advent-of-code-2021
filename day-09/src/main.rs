@@ -1,4 +1,5 @@
 use anyhow::Result;
+use std::collections::HashSet;
 use utils::files::read_file_string;
 
 fn main() -> Result<()> {
@@ -32,31 +33,70 @@ fn main() -> Result<()> {
         lowests.iter().fold(0, |acc, x| acc + x + 1)
     );
 
-    println!("{:?}", bfs_basin(&heightmap, (0, 0), &vec![]));
+    let mut explored = HashSet::new();
+    let mut top_3: Vec<usize> = vec![];
+
+    while let Some(start_pt) = next_pt(&heightmap, &explored) {
+        let size = bfs_basin(&heightmap, start_pt, &mut explored);
+
+        top_3.push(size);
+        top_3.sort();
+        top_3.reverse();
+        top_3 = top_3.into_iter().take(3).collect();
+
+        println!("{:?}", top_3);
+    }
+
+    println!(
+        "Part 2 answer: {}",
+        top_3.into_iter().fold(1, |acc, x| acc * x)
+    );
 
     Ok(())
 }
 
+/// Gets the next point to explore
+fn next_pt(
+    heightmap: &Vec<Vec<u32>>,
+    explored: &HashSet<(usize, usize)>,
+) -> Option<(usize, usize)> {
+    if explored.is_empty() {
+        return Some((0, 0));
+    }
+
+    for point in explored {
+        let neighbors = neighbors(heightmap, *point);
+
+        for neighbor in neighbors {
+            if !explored.contains(&neighbor) {
+                return Some(neighbor);
+            }
+        }
+    }
+
+    None
+}
+
 /// BFS to find the size and points of and in the basin, given an individual starting point.
 /// Note that because all basins are separate, we only need to expect the starting point to
-/// not be in any explored basin/point before.
+/// not be in any explored basin/point before. Updates `explored` with the new explored values
 fn bfs_basin(
     heightmap: &Vec<Vec<u32>>,
     start_pt: (usize, usize),
-    explored: &Vec<(usize, usize)>,
-) -> (usize, Vec<(usize, usize)>) {
+    explored: &mut HashSet<(usize, usize)>,
+) -> usize {
     // Size of basin
     let mut size = 0;
 
     // List of points to explore
     let mut to_explore: Vec<(usize, usize)> = vec![start_pt];
 
-    // List of points we have explored
-    let mut explored: Vec<(usize, usize)> = explored.to_vec();
-
     while !to_explore.is_empty() {
         let point = to_explore.pop().unwrap();
+        explored.insert(point);
 
+        // If it's 9 (or greater, should be impossible), then we know we can't explore
+        // further than that.
         if heightmap[point.1][point.0] >= 9 {
             continue;
         }
@@ -71,13 +111,9 @@ fn bfs_basin(
                 to_explore.push(neighbor);
             }
         }
-
-        explored.push(point);
-
-        println!("{:?}", point);
     }
 
-    (size, explored)
+    size
 }
 
 /// Get the surrounding points in the heightmap
