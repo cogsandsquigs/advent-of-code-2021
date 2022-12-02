@@ -32,7 +32,7 @@ fn main() -> Result<()> {
         lowests.iter().fold(0, |acc, x| acc + x + 1)
     );
 
-    // println!("{:?}", bfs_basin(&heightmap, (0, 0), &vec![]));
+    println!("{:?}", bfs_basin(&heightmap, (0, 0), &vec![]));
 
     Ok(())
 }
