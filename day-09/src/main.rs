@@ -45,6 +45,9 @@ fn bfs_basin(
     start_pt: (usize, usize),
     explored: &Vec<(usize, usize)>,
 ) -> (usize, Vec<(usize, usize)>) {
+    // Size of basin
+    let mut size = 0;
+
     // List of points to explore
     let mut to_explore: Vec<(usize, usize)> = vec![start_pt];
 
@@ -53,6 +56,12 @@ fn bfs_basin(
 
     while !to_explore.is_empty() {
         let point = to_explore.pop().unwrap();
+
+        if heightmap[point.1][point.0] >= 9 {
+            continue;
+        }
+
+        size += 1;
 
         // Get its neighbors
         let neighbors = neighbors(heightmap, point);
@@ -68,7 +77,7 @@ fn bfs_basin(
         println!("{:?}", point);
     }
 
-    (explored.len(), explored)
+    (size, explored)
 }
 
 /// Get the surrounding points in the heightmap
