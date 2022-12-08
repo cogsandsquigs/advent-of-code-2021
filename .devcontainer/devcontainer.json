@@ -1,5 +1,5 @@
 {
-  "image": "mcr.microsoft.com/devcontainers/alpine:latest",
+  "image": "mcr.microsoft.com/devcontainers/base:alpine",
   "features": {
     "ghcr.io/devcontainers/features/rust:latest": {
       "version":"latest"
